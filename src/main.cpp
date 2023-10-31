@@ -9,10 +9,7 @@ float a;
 const int pinr = 6;
 const int ping = 5;
 const int pinb = 3;
-
-// Define the colors
-const int colors[4][3] = {{255, 165, 0}, {255, 255, 0}, {75, 0, 130}, {255, 0, 255}};
-void color_loop();
+uint32_t Wheel(byte );
 
 UltraSonicDistanceSensor sensor(TRIG_PIN, ECHO_PIN);
 
@@ -36,24 +33,29 @@ void loop()
     Serial.println("/*");
     if (a >= 4 && a <= 50)
     {
-      color_loop();
-      Serial.print("Color?");
+      int color = Wheel(map(a, 4, 50, 0, 255)); // Map distance to a rainbow color
+      analogWrite(pinr, (color >> 16) & 0xFF); // Red component
+      analogWrite(ping, (color >> 8) & 0xFF);  // Green component
+      analogWrite(pinb, color & 0xFF);         // Blue component
     }
   }
 
   delay(100);
 }
 
-void color_loop()
+// Generate rainbow color based on a value from 0 to 255
+uint32_t Wheel(byte WheelPos)
 {
-  for (int i = 0; i < 4; i++)
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85)
   {
-    // Write each color to the LED
-    analogWrite(pinr, colors[i][0]);
-    analogWrite(ping, colors[i][1]);
-    analogWrite(pinb, colors[i][2]);
-
-    // Pause for a second before changing to the next color
-    delay(50);
+    return 0xFF - WheelPos * 3;
   }
+  if (WheelPos < 170)
+  {
+    WheelPos -= 85;
+    return 0xFF - WheelPos * 3 - 0x0000FF00;
+  }
+  WheelPos -= 170;
+  return 0xFF0000 - WheelPos * 3;
 }
