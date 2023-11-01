@@ -39,22 +39,67 @@ const float T = 0.1;
 
 PIDController PID(k_P, k_I, k_D, u_max, T);
 
-void setup() {
-  // Set the pin modes
-  pinMode(pinr, OUTPUT);
-  pinMode(ping, OUTPUT);
-  pinMode(pinb, OUTPUT);
+void setup()
+{
+  Serial.begin(9600);
+  myservo.attach(servoPin, min, max);
+  pinMode(button_pin, INPUT_PULLUP);
+
+  // set_servo();
+  // delay(500);
+  myservo.write(half_angle);
+  delay(500);
 }
 
-void loop() {
-  // Loop through each color
-  for (int i = 0; i < 4; i++) {
-    // Write each color to the LED
-    analogWrite(pinr, colors[i][0]);
-    analogWrite(ping, colors[i][1]);
-    analogWrite(pinb, colors[i][2]);
-    
-    // Pause for a second before changing to the next color
-    delay(500);
+void loop()
+{
+  a = sensor.measureDistanceCm();
+  // int current_ang = myservo.read();
+
+  if (a >= min_dist && a <= max_dist)
+  {
+    Serial.print("D: ");
+    Serial.println(a);
+    error = a - goal_dist;
+    int momentum = PID.computePID(error);
+    Serial.print("M: ");
+    Serial.println(momentum);
+    int angle = myservo.read() + momentum;
+    if (angle >= min_angle and angle <= max_angle)
+    {
+      myservo.write(angle);
+    }
   }
+
+  if (digitalRead(button_pin) == LOW)
+  {
+    jiggle_servo(10);
+  }
+}
+
+void set_servo()
+{
+  for (int angle = min_angle; angle <= max_angle; angle += 1)
+  {
+    myservo.write(angle);
+    delay(1);
+  }
+  delay(100);
+  for (int angle = max_angle; angle >= min_angle; angle -= 1)
+  {
+    myservo.write(angle);
+    delay(1);
+  }
+}
+
+void jiggle_servo(int move)
+{
+  int pos = myservo.read();
+  myservo.write(move);
+  delay(100);
+  myservo.write(pos);
+  delay(100);
+  myservo.write(pos - move);
+  delay(100);
+  myservo.write(pos);
 }
