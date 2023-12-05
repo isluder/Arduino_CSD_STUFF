@@ -1,105 +1,105 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <HCSR04.h>
-#include <PID.h>
+#include <PID_2.h>
 
 #define TRIG_PIN 12
 #define ECHO_PIN 11
-float a;
+float measurement;
 
 #define servoPin 9
-int min = 480;
-int max = 2500;
-Servo myservo;
+int minServoValue = 480;
+int maxServoValue = 2500;
+Servo servo;
 
 void set_servo();
-void jiggle_servo(int move);
+void home();
+void check_home();
 
-int min_angle = 15;
-int max_angle = 170;
-int half_angle = 90;
+int minServoAngle = 45;
+int maxServoAngle = 110;
+int HomeServoAngle = 90;
 
-float max_dist = 42;
-float min_dist = 5;
-float goal_dist = 16.25;
-float error;
+double maxLinearDistance = 45;
+double minLinearDistance = 4;
+double Setpoint = 18.25;
+double timeout = 500;
+double average_measurement = 10;
+float error, momentum;
 
 int button_pin = 6;
 
-int angle = 0;   // variable to store the servo position in degrees
-int reading = 0; // variable to store the reading from the analog input
-
 UltraSonicDistanceSensor sensor(TRIG_PIN, ECHO_PIN);
 
-const float k_P = 0.5;
-const float k_I = 0.05;
-const float k_D = 0.001;
-const float u_max = 10.0;
-const float T = 0.1;
+const double k_P = 10, k_I = 0.50, k_D = 5.0, T = 0.005;
 
-PIDController PID(k_P, k_I, k_D, u_max, T);
+PID pid(k_P, k_I, k_D, T);
 
 void setup()
 {
   Serial.begin(9600);
-  myservo.attach(servoPin, min, max);
+  servo.attach(servoPin, minServoValue, maxServoValue);
   pinMode(button_pin, INPUT_PULLUP);
+  servo.write(HomeServoAngle);
+  pid.setNormalize(maxLinearDistance, minLinearDistance, maxServoAngle, minServoAngle);
 
-  // set_servo();
-  // delay(500);
-  myservo.write(half_angle);
   delay(500);
 }
 
 void loop()
 {
-  a = sensor.measureDistanceCm();
-  // int current_ang = myservo.read();
-
-  if (a >= min_dist && a <= max_dist)
+  long sum = 0;
+  for (int i = 0; i < average_measurement; i++)
   {
-    Serial.print("D: ");
-    Serial.println(a);
-    error = a - goal_dist;
-    int momentum = PID.computePID(error);
-    Serial.print("M: ");
-    Serial.println(momentum);
-    int angle = myservo.read() + momentum;
-    if (angle >= min_angle and angle <= max_angle)
-    {
-      myservo.write(angle);
-    }
+    measurement = sensor.measureDistanceCm();
+    sum += measurement;
+  }
+  measurement = sum / average_measurement;
+
+  if (measurement >= minLinearDistance && measurement <= maxLinearDistance)
+  {
+    error = Setpoint - measurement;
+    float angle_pos = pid.computePID(error);
+    check_home();
+
+    String vars = pid.getVariables();
+
+    Serial.print("*/");
+    Serial.print(measurement);
+    Serial.print(",");
+    Serial.print(error);
+    Serial.print(",");
+    Serial.print(angle_pos);
+    Serial.print(vars);
+    Serial.println("/*");
+
+    servo.write(round(angle_pos));
+    check_home();
   }
 
+  check_home();
+
+  Serial.print("*/");
+  Serial.print(measurement);
+  Serial.print(", 0.0, 0.0, 0.0, 0.0");
+  Serial.println("/*");
+
+  if (measurement == -1){
+    home();
+  }
+
+}
+
+void check_home()
+{
   if (digitalRead(button_pin) == LOW)
   {
-    jiggle_servo(10);
+    home();
   }
 }
 
-void set_servo()
+void home()
 {
-  for (int angle = min_angle; angle <= max_angle; angle += 1)
-  {
-    myservo.write(angle);
-    delay(1);
-  }
-  delay(100);
-  for (int angle = max_angle; angle >= min_angle; angle -= 1)
-  {
-    myservo.write(angle);
-    delay(1);
-  }
-}
-
-void jiggle_servo(int move)
-{
-  int pos = myservo.read();
-  myservo.write(move);
-  delay(100);
-  myservo.write(pos);
-  delay(100);
-  myservo.write(pos - move);
-  delay(100);
-  myservo.write(pos);
+  servo.write(HomeServoAngle);
+  delay(250);
 }
