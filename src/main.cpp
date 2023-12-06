@@ -16,13 +16,13 @@ void set_servo();
 void home();
 void check_home();
 
-int minServoAngle = 45;
-int maxServoAngle = 110;
+int minServoAngle = 65;
+int maxServoAngle = 115;
 int HomeServoAngle = 90;
 
-double maxLinearDistance = 45;
-double minLinearDistance = 4;
-double Setpoint = 18.25;
+double maxLinearDistance = 17;
+double minLinearDistance = 4.7;
+double Setpoint = 10.32;
 double timeout = 500;
 double average_measurement = 10;
 float error, momentum;
@@ -31,7 +31,7 @@ int button_pin = 6;
 
 UltraSonicDistanceSensor sensor(TRIG_PIN, ECHO_PIN);
 
-const double k_P = 10, k_I = 0.50, k_D = 5.0, T = 0.005;
+const double k_P = -15.25, k_I = -1.00, k_D = -2.451, T = 0.005;
 
 PID pid(k_P, k_I, k_D, T);
 
@@ -79,14 +79,14 @@ void loop()
 
   check_home();
 
-  Serial.print("*/");
-  Serial.print(measurement);
-  Serial.print(", 0.0, 0.0, 0.0, 0.0");
-  Serial.println("/*");
+  // Serial.print("*/");
+  // Serial.print(measurement);
+  // Serial.print(", 0.0, 0.0, 0.0, 0.0");
+  // Serial.println("/*");
 
-  if (measurement == -1){
-    home();
-  }
+  // if (measurement == -1 or measurement >= maxLinearDistance or measurement == 0.0){
+  //   home();
+  // }
 
 }
 
