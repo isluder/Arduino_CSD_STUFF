@@ -83,7 +83,7 @@ void loop()
   // else if(measurement >= maxLinearDistance){
   //   servo.write(servo.read()+10);
   //   delay(100);
-  }
+  // }
 }
 
 void check_home()
