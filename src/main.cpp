@@ -6,6 +6,7 @@
 #define TRIG_PIN 12
 #define ECHO_PIN 11
 float measurement;
+float filtered_measurement = 20;
 
 #define servoPin 9
 int minServoValue = 480;
@@ -16,22 +17,21 @@ void set_servo();
 void home();
 void check_home();
 
-int minServoAngle = 65;
-int maxServoAngle = 115;
+int minServoAngle = 75;
+int maxServoAngle = 125;
 int HomeServoAngle = 90;
 
-float maxLinearDistance = 40;
+float maxLinearDistance = 58.5;
 float minLinearDistance = 4.7;
-float Setpoint = 18;
-float timeout = 500;
-float average_measurement = 10;
+float Setpoint = 31.6;
+float average_measurement = 5;
 float error, momentum;
 
 int button_pin = 6;
 
 UltraSonicDistanceSensor sensor(TRIG_PIN, ECHO_PIN);
 
-const float k_P = -15.25, k_I = -1.00, k_D = -2.451, T = 0.005;
+const float k_P = -40, k_I = -5, k_D = -1, T = 0.010;
 
 PID pid(k_P, k_I, k_D, T);
 
@@ -46,32 +46,29 @@ void setup()
   delay(500);
 }
 
+long sum;
 void loop()
 {
-  long sum = 0;
+  sum = 0;
   for (int i = 0; i < average_measurement; i++)
   {
     measurement = sensor.measureDistanceCm();
     sum += measurement;
   }
   measurement = sum / average_measurement;
+  // Low Pass Filter
+  filtered_measurement = 0.75 * filtered_measurement + 0.25 * measurement;
+  measurement = filtered_measurement;
 
   if (measurement >= minLinearDistance && measurement <= maxLinearDistance)
   {
     error = Setpoint - measurement;
     float angle_pos = pid.computePID(error);
-    check_home();
 
     String vars = pid.getVariables();
 
-    Serial.print("*/");
-    Serial.print(measurement);
-    Serial.print(",");
-    Serial.print(error);
-    Serial.print(",");
-    Serial.print(angle_pos);
-    Serial.print(vars);
-    Serial.println("/*");
+    Serial.print("*/" + String(measurement) + "," + String(error) + "," + String(angle_pos) + vars + "/*");
+    Serial.println();
 
     servo.write(round(angle_pos));
     check_home();
@@ -79,15 +76,14 @@ void loop()
 
   check_home();
 
-  // Serial.print("*/");
-  // Serial.print(measurement);
-  // Serial.print(", 0.0, 0.0, 0.0, 0.0");
-  // Serial.println("/*");
-
-  // if (measurement == -1 or measurement >= maxLinearDistance or measurement == 0.0){
-  //   home();
+  // if(measurement <= minLinearDistance){
+  //   servo.write(servo.read()-10);
+  //   delay(100);
   // }
-
+  // else if(measurement >= maxLinearDistance){
+  //   servo.write(servo.read()+10);
+  //   delay(100);
+  }
 }
 
 void check_home()
