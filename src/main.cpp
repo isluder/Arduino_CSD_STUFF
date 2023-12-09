@@ -20,18 +20,18 @@ int minServoAngle = 65;
 int maxServoAngle = 115;
 int HomeServoAngle = 90;
 
-double maxLinearDistance = 40;
-double minLinearDistance = 4.7;
-double Setpoint = 18;
-double timeout = 500;
-double average_measurement = 10;
+float maxLinearDistance = 40;
+float minLinearDistance = 4.7;
+float Setpoint = 18;
+float timeout = 500;
+float average_measurement = 10;
 float error, momentum;
 
 int button_pin = 6;
 
 UltraSonicDistanceSensor sensor(TRIG_PIN, ECHO_PIN);
 
-const double k_P = -15.25, k_I = -1.00, k_D = -2.451, T = 0.005;
+const float k_P = -15.25, k_I = -1.00, k_D = -2.451, T = 0.005;
 
 PID pid(k_P, k_I, k_D, T);
 
