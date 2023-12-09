@@ -20,9 +20,9 @@ int minServoAngle = 65;
 int maxServoAngle = 115;
 int HomeServoAngle = 90;
 
-double maxLinearDistance = 17;
+double maxLinearDistance = 40;
 double minLinearDistance = 4.7;
-double Setpoint = 10.32;
+double Setpoint = 18;
 double timeout = 500;
 double average_measurement = 10;
 float error, momentum;
