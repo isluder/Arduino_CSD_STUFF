@@ -5,7 +5,7 @@ class PID
 {
 public:
     PID(float k_P, float k_I, float k_D, float T)
-        : e_last(0.0), e_integral(0.0), e_derivative(0.0), k_P(k_P), k_I(k_I), k_D(k_D), T(T), Max_OverAll(10), Min_OverAll(-10), isnormalize(false), max_integral(125) {}
+        : e_last(0.0), e_integral(0.0), e_derivative(0.0), k_P(k_P), k_I(k_I), k_D(k_D), T(T), Max_OverAll(25), Min_OverAll(-25), isnormalize(false), max_integral(125) {}
 
     void setNormalize(float max_d, float min_d, float max_a, float min_a)
     {
