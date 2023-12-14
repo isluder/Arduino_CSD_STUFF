@@ -1,6 +1,6 @@
-# Arduino Projects!
+# Arduino PID Ball Balancer Project !
 
-Repository for Arduino Projects
+Repository for the Arduino Project for CSD
 Assigned by our Control System Component class.
 
 Using PlatformIO and aruduino language.
