@@ -82,14 +82,7 @@ void loop()
 
   check_home();
 
-  // if(measurement <= minLinearDistance){
-  //   servo.write(servo.read()-10);
-  //   delay(100);
-  // }
-  // else if(measurement >= maxLinearDistance){
-  //   servo.write(servo.read()+10);
-  //   delay(100);
-  // }
+
   if (run == false){
   Serial.print("*/" + String(measurement) + "," + String(0) + "," + String(0) + "/*");}
   Serial.println();
